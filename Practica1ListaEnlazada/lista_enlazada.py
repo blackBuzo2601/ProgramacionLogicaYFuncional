@@ -1,4 +1,10 @@
-#funcion para crear nodos 
+#EJEMPLO DE LISTA ENLAZADA
+#INTEGRANTES:
+#BUZO ZAMORA ELIAN
+#RAMIREZ SANTIAGO ELEAZAR 
+#VILLAVICENCIO ARCE MANUEL GERARDO
+#DAVID CALEB ROMERO BARRERAS
+
 def crear_nodo(valor):
     return {
         'valor': valor,

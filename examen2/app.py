@@ -2,37 +2,48 @@
 # BUZO ZAMORA ELIAN
 # PROGRAMACIÓN LÓGICA Y FUNCIONAL | EXAMEN 2
 
-import matplotlib.pyplot as plt  # Importamos la librería pyplot de matplotlib para crear gráficos
+import matplotlib.pyplot as plt  #Importamos la librería matplotlib para poder graficar los resultados
 
-# Definimos la función principal que implementa el método de Newton-Raphson de forma recursiva y pura
+#1e-10 => 0.0000000001 
+#Como queremos que la raíz aproximada sea muy precisa, entre más pequeña es la tolerancia
+#más exacta será la raíz que obtendremos. 
+#la tolerancia se usa como condición para detener la recursión cuando la diferencia entre 
+#f(x) y 0 es lo suficientemente pequeña (es decir, cuando estamos demasiado cerca de la raíz).
 def newton_raphson(funcion, derivada, valor_inicial, tolerancia=1e-10, maximo_iteraciones=1000, historial=None):
-    # `historial` llevará registro inmutable de cada valor de x calculado
-    # Si es la primera llamada (historial es None), lo inicializamos como una tupla vacía
+    #Si es la primera vez que se llama a la función, 'historial' será None (nulo),
+    #así que lo inicializamos como una tupla vacía para empezar a guardar los pasos desde cero.
     if historial is None:
         historial = ()
-    # Añadimos el valor actual valor_inicial al historial creando una nueva tupla (no mutamos nada)
+
+    #Tomamos una copia de la tupla que teníamos construida en historial y le agregamos el nuevo valor.
+    #Esto se hace así porque las tuplas son inmutables, o sea, no podemos modificarlas directamente.
+    #Entonces lo que hacemos es crear una nueva tupla que incluye la anterior + el nuevo valor.
     historial = historial + (valor_inicial,)
 
-    # Calculamos el valor de la función en el punto valor_inicial
+    #Evaluamos la función en el punto actual (valor_inicial) para ver qué tan cerca estamos de la raíz.
     valor_funcion = funcion(valor_inicial)
 
-    # 1) Condición de convergencia:
-    #    Si |funcion(valor_inicial)| es menor que la tolerancia especificada, consideramos que hemos encontrado
-    #    una aproximación suficientemente buena a la raíz.
+    #Verificamos si el valor absoluto de f(x) es menor que la tolerancia que definimos.
+    #Si esto se cumple, significa que estamos lo suficientemente cerca de 0,
+    #lo que se traduce que ya encontramos la raíz con un buen valor de precisión
     if abs(valor_funcion) < tolerancia:
-        return valor_inicial, historial  # Devolvemos la raíz aproximada y toda la secuencia de pasos
+        #Devolvemos el valor actual (la raíz aproximada) y el historial de todos los valores que calculamos.
+        return valor_inicial, historial
 
-    # 2) Condición de parada por exceso de iteraciones:
-    #    Si hemos agotado el número máximo de llamadas recursivas (maximo_iteraciones llega a 0),
-    #    lanzamos un error avisando de que no se alcanzó la convergencia.
+    #Si ya usamos todas las iteraciones permitidas y aún no llegamos a una raíz,
+    #detenemos la ejecución con un error
     if maximo_iteraciones == 0:
         raise Exception("Error: se alcanzó el número máximo de iteraciones sin convergencia.")
 
-    # 3) Cálculo del siguiente punto usando la fórmula de Newton-Raphson:
-    #    siguiente_valor = valor_inicial - funcion(valor_inicial) / derivada(valor_inicial)
-    #    Disminuimos maximo_iteraciones en 1 y llamamos recursivamente con el nuevo valor
+    #Aplicamos la fórmula del método de Newton-Raphson para encontrar el siguiente valor de x:
+    #   xn+1 = xn - f(xn) / f'(xn)
+    #Aquí se calcula ese siguiente valor a partir del punto actual.
     siguiente_valor = valor_inicial - valor_funcion / derivada(valor_inicial)
-    
+
+    #Llamamos recursivamente a la misma función con el nuevo valor calculado
+    #y restamos 1 a maximo_iteraciones, tambien retornamos el historial para
+    #seguir guardando los pasos recorridos
+    #El historial también se pasa para seguir guardando todos los pasos recorridos.
     return newton_raphson(
         funcion, derivada,
         siguiente_valor,
@@ -41,48 +52,44 @@ def newton_raphson(funcion, derivada, valor_inicial, tolerancia=1e-10, maximo_it
         historial
     )
 
-# ======================
-# Definición de la prueba
-# ======================
-
-# Definimos la función de prueba: f(x) = x^2 - 2, cuya raíz buscamos (√2 ≈ 1.4142)
+# Esta es la funcion de prueba: f(x) = x^2 - 2. Sabemos que su raíz es la 
+#raíz cuadrada de 2 ==>1.4142...
 funcion_prueba  = lambda x: x**2 - 2
 
-# Definimos su derivada: f'(x) = 2 * x
+#Definimos su derivada que sería: f'(x) = 2x. Defnir la derivada 
+#es necesario porque Newton-Raphson usa la derivada para avanzar en0 cada paso.
 derivada_prueba = lambda x: 2 * x
 
-# Escogemos un valor inicial razonable cerca de la raíz esperada
+#Definimos un punto de partida cercano a la raíz esperada.
+#Puede ser cualquier número real, pero si está muy lejos, puede tardar más en converger.
 valor_inicial = 1.0
 
-# Ejecutamos el método guardando la raíz y el historial de aproximaciones
+
+#Guardamos dos cosas:
+#raiz_aproximada: el valor final donde creemos que está la raíz
+#historial_pasos: una tupla con todos los valores de x que calculamos
 try:
     raiz_aproximada, historial_pasos = newton_raphson(funcion_prueba, derivada_prueba, valor_inicial)
-    # Mostramos en consola la aproximación final de la raíz
     print("Raíz aproximada:", raiz_aproximada)
+
+# Si por alguna razón se llegó al límite de iteraciones sin encontrar una buena aproximación,
+# mostramos el mensaje de error correspondiente.
 except Exception as error:
-    # Si ocurre un error (no converge), mostramos el mensaje correspondiente
     print(error)
 
-# =========================
-# Graficación de la evolución
-# =========================
-
-# 'historial_pasos' contiene la tupla con todos los valores de x en cada iteración:
-# e.g. (x0, x1, x2, ...)
-# range(len(historial_pasos)) crea una secuencia 0,1,2,... para el eje de iteraciones
 plt.plot(
-    range(len(historial_pasos)),  # eje X: número de iteración
-    historial_pasos,              # eje Y: valor de x_n en esa iteración
-    marker='o',                   # marca cada punto con un círculo
-    linestyle='-',                # une los puntos con líneas
-    color='blue'                  # color azul para la línea
+    range(len(historial_pasos)), 
+    historial_pasos,             
+    marker='o',                   
+    linestyle='-',                
+    color='blue'                 
 )
 
-# Añadimos título y etiquetas para que el gráfico sea claro
-plt.title("Aproximaciones por iteración")
-plt.xlabel("Iteración")
-plt.ylabel("Valor de x")
-plt.grid(True)  # Activamos la cuadrícula para facilitar la lectura de los valores
 
-# Guardamos el gráfico como una imagen PNG en el directorio actual
-plt.savefig("grafica_iteraciones.png")
+plt.title("Aproximaciones por iteración")  
+plt.xlabel("Iteración")                    
+plt.ylabel("Valor de x")                   
+plt.grid(True)                            
+
+
+plt.savefig("grafica.png")    

@@ -12,8 +12,14 @@ def newton_raphson(f, df, x0, tol=1e-10, max_iter=1000, history=None):
     history = history + (x0,)
 
     fx = f(x0)
-    if abs(fx) < tol or max_iter == 0:
+
+    # Condición de convergencia
+    if abs(fx) < tol:
         return x0, history
+    
+    # Si se alcanzó el límite de iteraciones sin converger
+    if max_iter == 0:
+        raise Exception("Error: se alcanzó el número máximo de iteraciones sin convergencia.")
 
     return newton_raphson(f, df, x0 - fx / df(x0),
                           tol, max_iter - 1,
@@ -27,9 +33,11 @@ df = lambda x: 2 * x
 x0 = 1.0
 
 # Ejecutar método
-raiz, pasos = newton_raphson(f, df, x0)
-
-print("Raíz aproximada:", raiz)
+try:
+    raiz, pasos = newton_raphson(f, df, x0)
+    print("Raíz aproximada:", raiz)
+except Exception as e:
+    print(e)
 
 # Graficar iteraciones
 plt.plot(range(len(pasos)), pasos, marker='o', linestyle='-', color='blue')

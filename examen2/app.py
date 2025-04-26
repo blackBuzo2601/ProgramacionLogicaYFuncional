@@ -1,20 +1,26 @@
+#20760257
+#BUZO ZAMORA ELIAN
+#PROGRAMACIÓN LÓGICA Y FUNCIONAL | EXAMEN 2
+
 import matplotlib.pyplot as plt
 
 # Función principal: Método de Newton-Raphson usando recursividad y funciones puras
-def newton_raphson(f, df, x0, tol=1e-10, max_iter=1000, iteraciones=None):
-    if iteraciones is None:
-        iteraciones = []
-    
+def newton_raphson(f, df, x0, tol=1e-10, max_iter=1000, history=None):
+    # history no es mutado: se redefine como una nueva tupla en cada llamada
+    if history is None:
+        history = ()
+    history = history + (x0,)
+
     fx = f(x0)
-    iteraciones.append(x0)
-
     if abs(fx) < tol or max_iter == 0:
-        return x0, iteraciones
+        return x0, history
 
-    return newton_raphson(f, df, x0 - fx / df(x0), tol, max_iter - 1, iteraciones)
+    return newton_raphson(f, df, x0 - fx / df(x0),
+                          tol, max_iter - 1,
+                          history)
 
 # Ejemplo de función y derivada
-f = lambda x: x**2 - 2
+f  = lambda x: x**2 - 2
 df = lambda x: 2 * x
 
 # Valor inicial
@@ -32,5 +38,5 @@ plt.xlabel("Iteración")
 plt.ylabel("Valor de x")
 plt.grid(True)
 
-# Guardar la gráfica
+# Guardar la gráfica en un archivo
 plt.savefig("grafica_iteraciones.png")
